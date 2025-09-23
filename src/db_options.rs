@@ -659,6 +659,14 @@ impl BlockBasedOptions {
         }
     }
 
+    pub fn set_cache_index_and_filter_blocks_with_high_priority(&mut self, v: bool) {
+        unsafe {
+            ffi::rocksdb_block_based_options_set_cache_index_and_filter_blocks_with_high_priority(
+                self.inner, v as u8,
+            );
+        }
+    }
+
     /// Defines the index type to be used for SS-table lookups.
     ///
     /// # Examples
@@ -1572,6 +1580,12 @@ impl Options {
     pub fn set_periodic_compaction_seconds(&mut self, secs: u64) {
         unsafe {
             ffi::rocksdb_options_set_periodic_compaction_seconds(self.inner, secs);
+        }
+    }
+
+    pub fn set_ttl(&mut self, ttl: u64) {
+        unsafe {
+            ffi::rocksdb_options_set_ttl(self.inner, ttl);
         }
     }
 

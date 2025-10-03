@@ -22,13 +22,13 @@ use std::slice;
 /// This is returned by a compaction filter callback. Depending
 /// on the value, the object may be kept, removed, or changed
 /// in the database during a compaction.
-pub enum Decision {
+pub enum Decision<'change_data> {
     /// Keep the old value
     Keep,
     /// Remove the object from the database
     Remove,
     /// Change the value for the key
-    Change(&'static [u8]),
+    Change(&'change_data [u8]),
 }
 
 /// CompactionFilter allows an application to modify/delete a key-value at
@@ -72,8 +72,11 @@ pub trait CompactionFilter {
 ///  See [Options::set_compaction_filter][set_compaction_filter] for more details
 ///
 ///  [set_compaction_filter]: ../struct.Options.html#method.set_compaction_filter
-pub trait CompactionFilterFn: FnMut(u32, &[u8], &[u8]) -> Decision {}
-impl<F> CompactionFilterFn for F where F: FnMut(u32, &[u8], &[u8]) -> Decision + Send + 'static {}
+pub trait CompactionFilterFn: FnMut(u32, &[u8], &[u8]) -> Decision<'static> {}
+impl<F> CompactionFilterFn for F where
+    F: FnMut(u32, &[u8], &[u8]) -> Decision<'static> + Send + 'static
+{
+}
 
 pub struct CompactionFilterCallback<F>
 where
@@ -145,7 +148,7 @@ where
 
 #[cfg(test)]
 #[allow(unused_variables)]
-fn test_filter(level: u32, key: &[u8], value: &[u8]) -> Decision {
+fn test_filter(level: u32, key: &[u8], value: &[u8]) -> Decision<'static> {
     use self::Decision::{Change, Keep, Remove};
     match key.first() {
         Some(&b'_') => Remove,

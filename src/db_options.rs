@@ -1657,6 +1657,12 @@ impl Options {
     ///
     /// If multi-threaded compaction is used, `filter_fn` may be called multiple times
     /// simultaneously.
+    ///
+    /// The filter function must return `'static` slice when requesting Data
+    /// change due to limitations of RocksDB C-compatible API. If this is too
+    /// restrictive, use `set_compaction_filter_factory` that allows to return a
+    /// slice reference pointing to a buffer stored in `CompactionFilter`
+    /// instance.
     pub fn set_compaction_filter<F>(&mut self, name: impl CStrLike, filter_fn: F)
     where
         F: CompactionFilterFn + Send + 'static,
